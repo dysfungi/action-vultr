@@ -41924,7 +41924,7 @@ const tc = __nccwpck_require__(3472);
 const { Octokit } = __nccwpck_require__(5772);
 
 const baseDownloadURL = "https://github.com/vultr/vultr-cli/releases/download"
-const fallbackVersion = "2.5.2"
+const fallbackVersion = "3.3.0"
 const octokit = new Octokit();
 
 async function downloadDoctl(version) {
