@@ -2,6 +2,8 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const tc = require('@actions/tool-cache');
 const { Octokit } = require("@octokit/rest");
+const fs = require('fs');
+const os = require('os');
 
 const baseDownloadURL = "https://github.com/vultr/vultr-cli/releases/download"
 const fallbackVersion = "3.3.0"
@@ -50,6 +52,17 @@ Failed to retrieve latest version; falling back to: ${fallbackVersion}`);
     }
     core.addPath(path);
     core.info(`>>> vultr-cli version v${version} installed to ${path}`);
+
+    // vultr-cli prints `Error reading in config file (~/.vultr-cli.yaml) : ... no
+    // such file or directory` to STDOUT (not stderr) when the default config is
+    // absent. That line gets prepended to `--output=json` results and breaks any
+    // downstream `vultr-cli ... | jq` pipeline. Fresh CI runners have no config
+    // file, so create an empty one to guarantee clean stdout for all callers.
+    const configPath = `${os.homedir()}/.vultr-cli.yaml`;
+    if (!fs.existsSync(configPath)) {
+        fs.writeFileSync(configPath, '');
+        core.info(`>>> Created empty vultr-cli config at ${configPath}`);
+    }
 
     var token = core.getInput('token', { required: true });
     process.env.VULTR_API_KEY = token;
